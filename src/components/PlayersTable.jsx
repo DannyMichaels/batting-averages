@@ -113,16 +113,20 @@ const YearFilter = ({ column, yearIds }) => {
 
   return (
     <FormControl fullWidth>
-      <InputLabel>Filter by yearId</InputLabel>
+      <InputLabel>Select year</InputLabel>
       <Select
+        style={{ width: '120px' }}
         value={filterValue || ''}
         label="Filter by yearId"
         onChange={handleChange}>
-        {yearIds.map((yearId, idx) => (
-          <MenuItem value={yearId} key={idx}>
-            {yearId}
-          </MenuItem>
-        ))}
+        {[...yearIds]
+          // latest year at top
+          .sort((a, b) => b - a)
+          .map((yearId, idx) => (
+            <MenuItem value={yearId} key={idx}>
+              {yearId}
+            </MenuItem>
+          ))}
       </Select>
     </FormControl>
   );
