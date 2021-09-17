@@ -109,7 +109,7 @@ const PlayerFilter = ({ column, playerIds }) => {
 
   return (
     <AutoComplete
-      options={playerIds.map((playerId) => playerId)}
+      options={playerIds}
       valueProp={filterValue}
       displayKey={'playerId'}
       valueKey={'playerId'}

@@ -1,5 +1,10 @@
 import { useState, Children } from 'react';
 import Input from '@mui/material/Input';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+
+// css for this is in index.css
 
 export default function AutoComplete({
   fullWidth,
@@ -7,7 +12,6 @@ export default function AutoComplete({
   options,
   valueProp,
   displayKey,
-  valueKey,
   placeholder,
 }) {
   const [state, setState] = useState({
@@ -21,13 +25,11 @@ export default function AutoComplete({
     const userInput = e.currentTarget.value;
     handleChange(userInput); // using the handleChange from props, setting name to e.target.value
 
-    const filteredOptions = options.filter((option) => {
-      // prettier-ignore
-      const filterOption = typeof option === 'string' ? option : option[displayKey];
-      return filterOption?.toLowerCase().indexOf(userInput.toLowerCase()) > -1;
-    });
+    const filteredOptions = options.filter((option) =>
+      option.toLowerCase().includes(userInput.toLowerCase())
+    );
 
-    this.setState({
+    setState({
       activeOption: 0,
       filteredOptions,
       showOptions: true,
@@ -35,8 +37,19 @@ export default function AutoComplete({
     });
   };
 
-  const onClick = (e) => {
-    handleChange(e.currentTarget.innerText, e.currentTarget.id);
+  const handleReset = () => {
+    handleChange('');
+
+    setState({
+      activeOption: 0,
+      filteredOptions: [],
+      showOptions: false,
+      userInput: '',
+    });
+  };
+
+  const handleClickOption = (e) => {
+    handleChange(e.currentTarget.innerText);
 
     setState({
       activeOption: 0,
@@ -53,8 +66,7 @@ export default function AutoComplete({
       <li
         aria-label={option[displayKey]}
         className="autocomplete option"
-        onClick={onClick}
-        id={typeof option === 'string' ? option : option[valueKey]}>
+        onClick={handleClickOption}>
         {typeof option === 'string' ? option : option[displayKey]}
       </li>
     ))
@@ -82,8 +94,15 @@ export default function AutoComplete({
           type="text"
           className="autocomplete search-box"
           onChange={onChange}
-          value={valueProp}
+          value={valueProp || ''}
           placeholder={placeholder}
+          endAdornment={
+            <InputAdornment position="end">
+              <IconButton>
+                <CloseIcon fontSize="small" onClick={handleReset} />
+              </IconButton>
+            </InputAdornment>
+          }
         />
       </div>
       {autoCompleteJSX}

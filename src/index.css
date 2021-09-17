@@ -18,3 +18,31 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* auto complete css */
+.autocomplete.options {
+  list-style: none;
+  border: 1px solid #979797;
+  box-shadow: 0 3px 11px 0 rgb(0 0 0 / 29%);
+  border-radius: 8px;
+  box-sizing: border-box;
+  min-height: fit-content;
+  max-height: 162px;
+  width: auto;
+  overflow-y: scroll;
+  color: #545454;
+  font-family: Roboto;
+  font-size: 1.3rem;
+  line-height: 18px;
+  font-weight: 300;
+  text-align: left;
+
+  padding: 0;
+  margin: 0;
+}
+
+.autocomplete.option {
+  cursor: pointer;
+  margin: 20px 10px;
+  width: fit-content;
+}
