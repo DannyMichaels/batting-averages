@@ -6,6 +6,9 @@ import BattingCSV from './Batting.csv';
 // components
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 
 // utils
 import ShowMoreDialog from './components/ShowMoreDialog';
@@ -16,6 +19,7 @@ function App() {
   const [players, setPlayers] = useState([]); // each individual players data, use teams to get the teamname
   const [showMore, setShowMore] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const toggleMoreOpen = (playerData) => {
     setShowMore(playerData.playerID);
@@ -34,6 +38,8 @@ function App() {
 
       const playersData = await csv(BattingCSV);
       setPlayers(playersData.slice(0, -1)); // get rid of the columns object in the array with slice
+
+      setIsLoading(false);
     };
 
     fetchCSVDataOnMount();
@@ -46,13 +52,31 @@ function App() {
         justifyContent="center"
         alignItems="center"
         minHeight="100vh">
-        <Paper>
-          <PlayersTable
-            players={players}
-            teams={teams}
-            toggleMoreOpen={toggleMoreOpen}
-          />
-        </Paper>
+        {/* if is loading, show loading, else show table */}
+        {isLoading ? (
+          <Grid
+            container
+            direction="column"
+            alignItems="center"
+            justifyContent="center">
+            <Grid item>
+              <Typography variant="h3" component="h1">
+                Loading...
+              </Typography>
+            </Grid>
+            <Grid item>
+              <CircularProgress style={{ color: '#fff' }} size={100} />
+            </Grid>
+          </Grid>
+        ) : (
+          <Paper>
+            <PlayersTable
+              players={players}
+              teams={teams}
+              toggleMoreOpen={toggleMoreOpen}
+            />
+          </Paper>
+        )}
       </Box>
 
       {/* show more dialog */}

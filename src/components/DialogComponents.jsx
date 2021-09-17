@@ -17,7 +17,7 @@ export const styles = (theme) => ({
 });
 
 export const DialogTitle = withStyles(styles)((props) => {
-  const { children, classes, onClose, ...other } = props;
+  const { children, classes, onClose } = props;
   return (
     <>
       <Grid
