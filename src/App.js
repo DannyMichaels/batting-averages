@@ -4,6 +4,16 @@ import './App.css';
 import TeamsCSV from './Teams.csv';
 import BattingCSV from './Batting.csv';
 
+// components
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TableFooter from '@mui/material/TableFooter';
+import TablePagination from '@mui/material/TablePagination';
+
 function App() {
   const [teams, setTeams] = useState([]); // use teams to get teamname
   const [players, setPlayers] = useState([]); // each individual players data, use teams to get the teamname
@@ -32,6 +42,11 @@ function App() {
             <th>{columnText}</th>
           ))}
         </thead>
+        <tr>
+          {/* {players.map((player) => {
+            return <>text</>;
+          })} */}
+        </tr>
       </table>
     </div>
   );
