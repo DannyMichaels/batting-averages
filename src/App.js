@@ -6,11 +6,11 @@ import BattingCSV from './Batting.csv';
 // components
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
+import Loading from './components/Loading';
 
 // utils
 import ShowMoreDialog from './components/ShowMoreDialog';
 import PlayersTable from './components/PlayersTable';
-import Loading from './components/Loading';
 
 function App() {
   const [teams, setTeams] = useState([]); // use teams to get teamname
