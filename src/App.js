@@ -2,7 +2,7 @@ import { csv } from 'd3-fetch';
 import { useEffect, useState, useMemo } from 'react';
 import TeamsCSV from './Teams.csv';
 import BattingCSV from './Batting.csv';
-import { useTable, usePagination } from 'react-table';
+import { useTable, usePagination, useFilters } from 'react-table';
 
 // components
 import Table from '@mui/material/Table';
@@ -27,6 +27,7 @@ import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 // utils
 import { makeStyles } from '@mui/styles';
 import ShowMoreDialog from './components/ShowMoreDialog';
+import { Hidden } from '@mui/material';
 
 const useStyles = makeStyles((theme) => ({
   tableRoot: {
@@ -83,7 +84,11 @@ function App() {
     setShowMore(false);
     setSelectedPlayer(null);
   };
+  // The application should also accept filter options:
 
+  // Year
+  // Team name
+  // Year and Team name
   const columns = useMemo(
     () => [
       {
@@ -101,6 +106,42 @@ function App() {
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
           return <span>{playerData.yearID}</span>;
+        },
+      },
+      {
+        Header: 'stint',
+        accessor: 'stint',
+        Cell: ({ cell }) => {
+          const playerData = cell.row.original;
+
+          return <span>{playerData.stint}</span>;
+        },
+      },
+      {
+        Header: 'teamID',
+        accessor: 'teamID',
+        Cell: ({ cell }) => {
+          const playerData = cell.row.original;
+
+          return <span>{playerData.teamID}</span>;
+        },
+      },
+      {
+        Header: 'AB',
+        accessor: 'AB',
+        Cell: ({ cell }) => {
+          const playerData = cell.row.original;
+
+          return <span>{playerData.AB}</span>;
+        },
+      },
+      {
+        Header: 'H',
+        accessor: 'H',
+        Cell: ({ cell }) => {
+          const playerData = cell.row.original;
+
+          return <span>{playerData.H}</span>;
         },
       },
       {
@@ -151,6 +192,8 @@ function App() {
       data: players, // passing the players as data for the table
       initialState: { pageIndex: 0, pageSize: 20 },
     },
+    useFilters,
+
     usePagination
   ); // react-table hooks
 
