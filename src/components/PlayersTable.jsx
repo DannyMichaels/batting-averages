@@ -83,11 +83,22 @@ const ColumnFilter = ({ column }) => {
 };
 
 export default function PlayersTable({ players, teams, toggleMoreOpen }) {
-  // The application should also accept filter options:
+  /* add another property for each player, called teamName.
+  find the team of the player by teamId
+   return the team's name */
+  let tablePlayersData = useMemo(
+    () =>
+      [...players].map((player) => ({
+        ...player,
+        teamName: [...teams].find(({ teamID }) => teamID === player.teamID)
+          .name,
+      })),
+    // change this whenever players or teams change
+    [players, teams]
+  );
 
   const defaultColumn = useMemo(
     () => ({
-      // Let's set up our default Filter UI
       Filter: <></>,
     }),
     []
@@ -100,7 +111,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
     () => [
       {
         Header: 'playerId',
-        accessor: 'playerId',
+        accessor: 'playerID',
         Filter: ColumnFilter,
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
@@ -157,17 +168,12 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
       {
         Header: 'Team name(s)',
         accessor: 'teamName',
-        // Filter: ColumnFilter,
+        Filter: ColumnFilter,
+
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
-          // find the team of the player by teamId
-          // return the team's name
 
-          let team = [...teams].find(
-            ({ teamID }) => teamID === playerData.teamID
-          );
-
-          return <span>{team.name}</span>;
+          return <span>{playerData.teamName}</span>;
         },
       },
       {
@@ -180,8 +186,8 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
         },
       },
     ],
-    // check for these dependencies changing to trigger a rerender change.
-    [teams]
+
+    []
   );
 
   const {
@@ -201,7 +207,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
     {
       defaultColumn,
       columns,
-      data: players, // passing the players as data for the table
+      data: tablePlayersData, // passing the players as data for the table
       initialState: { pageIndex: 0, pageSize: 20 },
     },
     useFilters,
