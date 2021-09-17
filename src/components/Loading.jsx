@@ -10,7 +10,11 @@ export default function Loading() {
       alignItems="center"
       justifyContent="center">
       <Grid item>
-        <Typography variant="h3" component="h1" gutterBottom>
+        <Typography
+          variant="h3"
+          component="h1"
+          gutterBottom
+          style={{ color: '#fff' }}>
           Loading...
         </Typography>
       </Grid>

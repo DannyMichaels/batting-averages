@@ -5,11 +5,7 @@ import App from './App';
 import { ThemeProvider } from '@mui/styles/';
 import { createTheme } from '@mui/material/styles';
 
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
+const theme = createTheme();
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>

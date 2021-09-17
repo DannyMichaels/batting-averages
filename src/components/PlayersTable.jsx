@@ -22,6 +22,7 @@ import TablePagination from '@mui/material/TablePagination';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Grid from '@mui/material/Grid';
+import TextField from '@mui/material/TextField';
 
 // icons
 import FirstPageIcon from '@mui/icons-material/FirstPage';
@@ -45,6 +46,15 @@ const calculateBA = (playerData) => {
   let battingAverage = hits / atBats;
 
   return battingAverage;
+};
+
+// sort players according to their batting average.
+const sortPlayers = (a, b) => {
+  const playerOneBA = calculateBA(a);
+  const playerTwoBA = calculateBA(b);
+
+  // desc, highest avg showing at top.
+  return playerTwoBA - playerOneBA;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -72,11 +82,18 @@ const useStyles = makeStyles((theme) => ({
 const ColumnFilter = ({ column }) => {
   const { filterValue, setFilter } = column;
 
+  const handleChange = (event) => {
+    setFilter(event.target.value);
+  };
+
   return (
     <span>
-      <input
+      <TextField
+        variant="outlined"
+        style={{ color: '#000 !important' }}
+        placeholder={`Filter by ${column.Header}`}
         value={filterValue || ''}
-        onChange={(e) => setFilter(e.target.value)}
+        onChange={handleChange}
       />
     </span>
   );
@@ -85,18 +102,23 @@ const ColumnFilter = ({ column }) => {
 export default function PlayersTable({ players, teams, toggleMoreOpen }) {
   /* add another property for each player, called teamName.
   find the team of the player by teamId
-   return the team's name */
+   return the team's name,
+   sort by BA
+   */
   let tablePlayersData = useMemo(
     () =>
-      [...players].map((player) => ({
-        ...player,
-        teamName: [...teams].find(({ teamID }) => teamID === player.teamID)
-          .name,
-      })),
+      [...players]
+        .map((player) => ({
+          ...player,
+          teamName: [...teams].find(({ teamID }) => teamID === player.teamID)
+            .name,
+        }))
+        .sort(sortPlayers),
     // change this whenever players or teams change
     [players, teams]
   );
 
+  // react-table requires a default column when using filters.
   const defaultColumn = useMemo(
     () => ({
       Filter: <></>,
@@ -104,15 +126,16 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
     []
   );
 
-  // Year
-  // Team name
-  // Year and Team name
+  /* Filterable columns:  
+  Year
+  Team name
+  */
   const columns = useMemo(
     () => [
       {
         Header: 'playerId',
         accessor: 'playerID',
-        Filter: ColumnFilter,
+        // Filter: ColumnFilter,
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
 
@@ -182,7 +205,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
 
-          return <span>{calculateBA(playerData)}</span>;
+          return <span>{calculateBA(playerData).toString()}</span>;
         },
       },
     ],

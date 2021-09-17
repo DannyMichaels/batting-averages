@@ -6,13 +6,11 @@ import BattingCSV from './Batting.csv';
 // components
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
 
 // utils
 import ShowMoreDialog from './components/ShowMoreDialog';
 import PlayersTable from './components/PlayersTable';
+import Loading from './components/Loading';
 
 function App() {
   const [teams, setTeams] = useState([]); // use teams to get teamname
@@ -54,20 +52,7 @@ function App() {
         minHeight="100vh">
         {/* if is loading, show loading, else show table */}
         {isLoading ? (
-          <Grid
-            container
-            direction="column"
-            alignItems="center"
-            justifyContent="center">
-            <Grid item>
-              <Typography variant="h3" component="h1">
-                Loading...
-              </Typography>
-            </Grid>
-            <Grid item>
-              <CircularProgress style={{ color: '#fff' }} size={100} />
-            </Grid>
-          </Grid>
+          <Loading />
         ) : (
           <Paper>
             <PlayersTable
