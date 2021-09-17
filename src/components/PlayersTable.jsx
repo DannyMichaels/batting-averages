@@ -29,6 +29,7 @@ import FirstPageIcon from '@mui/icons-material/FirstPage';
 import LastPageIcon from '@mui/icons-material/LastPage';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import AutoComplete from './AutoComplete';
 
 /**
  * @method calculateBA
@@ -99,6 +100,26 @@ const ColumnFilter = ({ column }) => {
   );
 };
 
+const PlayerFilter = ({ column, playerIds }) => {
+  const { filterValue, setFilter } = column;
+
+  const handleChange = (value) => {
+    setFilter(value);
+  };
+
+  return (
+    <AutoComplete
+      options={playerIds.map((playerId) => playerId)}
+      valueProp={filterValue}
+      displayKey={'playerId'}
+      valueKey={'playerId'}
+      handleChange={handleChange} // passing the handleChange as props.
+      fullWidth
+      placeholder={'Filter by playerId'}
+    />
+  );
+};
+
 export default function PlayersTable({ players, teams, toggleMoreOpen }) {
   /* add another property for each player, called teamName.
   find the team of the player by teamId
@@ -118,6 +139,11 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
     [players, teams]
   );
 
+  const playerIds = useMemo(
+    () => [...new Set([...tablePlayersData].map(({ playerID }) => playerID))],
+    [tablePlayersData]
+  );
+
   // react-table requires a default column when using filters.
   const defaultColumn = useMemo(
     () => ({
@@ -135,7 +161,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
       {
         Header: 'playerId',
         accessor: 'playerID',
-        // Filter: ColumnFilter,
+        Filter: (props) => PlayerFilter(props),
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
 
@@ -152,42 +178,42 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
           return <span>{playerData.yearID}</span>;
         },
       },
-      {
-        Header: 'stint',
-        accessor: 'stint',
-        Cell: ({ cell }) => {
-          const playerData = cell.row.original;
+      // {
+      //   Header: 'stint',
+      //   accessor: 'stint',
+      //   Cell: ({ cell }) => {
+      //     const playerData = cell.row.original;
 
-          return <span>{playerData.stint}</span>;
-        },
-      },
-      {
-        Header: 'teamID',
-        accessor: 'teamID',
-        Cell: ({ cell }) => {
-          const playerData = cell.row.original;
+      //     return <span>{playerData.stint}</span>;
+      //   },
+      // },
+      // {
+      //   Header: 'teamID',
+      //   accessor: 'teamID',
+      //   Cell: ({ cell }) => {
+      //     const playerData = cell.row.original;
 
-          return <span>{playerData.teamID}</span>;
-        },
-      },
-      {
-        Header: 'AB',
-        accessor: 'AB',
-        Cell: ({ cell }) => {
-          const playerData = cell.row.original;
+      //     return <span>{playerData.teamID}</span>;
+      //   },
+      // },
+      // {
+      //   Header: 'AB',
+      //   accessor: 'AB',
+      //   Cell: ({ cell }) => {
+      //     const playerData = cell.row.original;
 
-          return <span>{playerData.AB}</span>;
-        },
-      },
-      {
-        Header: 'H',
-        accessor: 'H',
-        Cell: ({ cell }) => {
-          const playerData = cell.row.original;
+      //     return <span>{playerData.AB}</span>;
+      //   },
+      // },
+      // {
+      //   Header: 'H',
+      //   accessor: 'H',
+      //   Cell: ({ cell }) => {
+      //     const playerData = cell.row.original;
 
-          return <span>{playerData.H}</span>;
-        },
-      },
+      //     return <span>{playerData.H}</span>;
+      //   },
+      // },
       {
         Header: 'Team name(s)',
         accessor: 'teamName',
@@ -258,7 +284,9 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
                       <Grid container direction="column">
                         <Grid item>{column.render('Header')}</Grid>
                         <Grid item>
-                          {column.canFilter ? column.render('Filter') : null}
+                          {column.canFilter
+                            ? column.render('Filter', { playerIds })
+                            : null}
                         </Grid>
                       </Grid>
                     </TableCell>
