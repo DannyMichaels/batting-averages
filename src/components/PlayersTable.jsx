@@ -23,6 +23,10 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 // icons
 import FirstPageIcon from '@mui/icons-material/FirstPage';
@@ -80,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ColumnFilter = ({ column }) => {
+const TeamsFilter = ({ column }) => {
   const { filterValue, setFilter } = column;
 
   const handleChange = (event) => {
@@ -97,6 +101,30 @@ const ColumnFilter = ({ column }) => {
         onChange={handleChange}
       />
     </span>
+  );
+};
+
+const YearFilter = ({ column, yearIds }) => {
+  const { filterValue, setFilter } = column;
+
+  const handleChange = (event) => {
+    setFilter(event.target.value);
+  };
+
+  return (
+    <FormControl fullWidth>
+      <InputLabel>Filter by yearId</InputLabel>
+      <Select
+        value={filterValue || ''}
+        label="Filter by yearId"
+        onChange={handleChange}>
+        {yearIds.map((yearId, idx) => (
+          <MenuItem value={yearId} key={idx}>
+            {yearId}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
   );
 };
 
@@ -139,8 +167,15 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
     [players, teams]
   );
 
+  // playerIds for auto complete.
+  // use set so values don't repeat.
   const playerIds = useMemo(
     () => [...new Set([...tablePlayersData].map(({ playerID }) => playerID))],
+    [tablePlayersData]
+  );
+
+  const yearIds = useMemo(
+    () => [...new Set([...tablePlayersData].map(({ yearID }) => yearID))],
     [tablePlayersData]
   );
 
@@ -161,7 +196,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
       {
         Header: 'playerId',
         accessor: 'playerID',
-        Filter: (props) => PlayerFilter(props),
+        Filter: PlayerFilter,
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
 
@@ -171,53 +206,17 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
       {
         Header: 'yearId',
         accessor: 'yearID', // when filters will look for yearID to change.
-        Filter: ColumnFilter,
+        Filter: YearFilter,
 
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
           return <span>{playerData.yearID}</span>;
         },
       },
-      // {
-      //   Header: 'stint',
-      //   accessor: 'stint',
-      //   Cell: ({ cell }) => {
-      //     const playerData = cell.row.original;
-
-      //     return <span>{playerData.stint}</span>;
-      //   },
-      // },
-      // {
-      //   Header: 'teamID',
-      //   accessor: 'teamID',
-      //   Cell: ({ cell }) => {
-      //     const playerData = cell.row.original;
-
-      //     return <span>{playerData.teamID}</span>;
-      //   },
-      // },
-      // {
-      //   Header: 'AB',
-      //   accessor: 'AB',
-      //   Cell: ({ cell }) => {
-      //     const playerData = cell.row.original;
-
-      //     return <span>{playerData.AB}</span>;
-      //   },
-      // },
-      // {
-      //   Header: 'H',
-      //   accessor: 'H',
-      //   Cell: ({ cell }) => {
-      //     const playerData = cell.row.original;
-
-      //     return <span>{playerData.H}</span>;
-      //   },
-      // },
       {
         Header: 'Team name(s)',
         accessor: 'teamName',
-        Filter: ColumnFilter,
+        Filter: TeamsFilter,
 
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
@@ -285,7 +284,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
                         <Grid item>{column.render('Header')}</Grid>
                         <Grid item>
                           {column.canFilter
-                            ? column.render('Filter', { playerIds })
+                            ? column.render('Filter', { playerIds, yearIds }) // pass props to column
                             : null}
                         </Grid>
                       </Grid>

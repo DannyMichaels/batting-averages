@@ -97,11 +97,13 @@ export default function AutoComplete({
           value={valueProp || ''}
           placeholder={placeholder}
           endAdornment={
-            <InputAdornment position="end">
-              <IconButton onClick={handleReset}>
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            </InputAdornment>
+            valueProp ? (
+              <InputAdornment position="end">
+                <IconButton onClick={handleReset}>
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ) : null
           }
         />
       </div>
