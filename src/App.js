@@ -6,7 +6,7 @@ import BattingCSV from './Batting.csv';
 
 function App() {
   const [teams, setTeams] = useState([]); // use teams to get teamname
-  const [batting, setBatting] = useState([]); // each individual players data, use teams to get the teamname
+  const [players, setPlayers] = useState([]); // each individual players data, use teams to get the teamname
 
   useEffect(() => {
     csv(TeamsCSV).then((data) => {
@@ -18,12 +18,23 @@ function App() {
     csv(BattingCSV).then((data) => {
       console.log('batting.csv', data);
       let dataWithoutColumns = data.slice(0, -1);
-
-      setBatting(dataWithoutColumns);
+      setPlayers(dataWithoutColumns);
     });
   }, []);
 
-  return <div className="App">App</div>;
+  const COLUMNS = ['playerID', 'yearId', 'Team name(s)', 'Batting Average'];
+
+  return (
+    <div className="App">
+      <table>
+        <thead>
+          {COLUMNS.map((columnText) => (
+            <th>{columnText}</th>
+          ))}
+        </thead>
+      </table>
+    </div>
+  );
 }
 
 export default App;
