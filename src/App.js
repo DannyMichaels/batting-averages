@@ -1,6 +1,5 @@
 import { csv } from 'd3-fetch';
 import { useEffect, useState, useMemo } from 'react';
-import './App.css';
 import TeamsCSV from './Teams.csv';
 import BattingCSV from './Batting.csv';
 import { useTable, usePagination } from 'react-table';
@@ -71,7 +70,6 @@ function App() {
   const [teams, setTeams] = useState([]); // use teams to get teamname
   const [players, setPlayers] = useState([]); // each individual players data, use teams to get the teamname
 
-  console.log({ teams });
   const columns = useMemo(
     () => [
       {
@@ -98,7 +96,8 @@ function App() {
           const playerData = cell.row.original;
           // find the team of the player by teamId
           // return the team's name
-          let team = [...teams].filter(
+
+          let team = [...teams].find(
             ({ teamID }) => teamID === playerData.teamID
           );
 
