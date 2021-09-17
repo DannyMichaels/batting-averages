@@ -17,6 +17,7 @@ import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
+import Grid from '@mui/material/Grid';
 
 // icons
 import FirstPageIcon from '@mui/icons-material/FirstPage';
@@ -27,7 +28,6 @@ import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 // utils
 import { makeStyles } from '@mui/styles';
 import ShowMoreDialog from './components/ShowMoreDialog';
-import { Grid } from '@mui/material/Grid';
 
 const useStyles = makeStyles((theme) => ({
   tableRoot: {
