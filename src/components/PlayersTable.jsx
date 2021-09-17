@@ -69,8 +69,29 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const ColumnFilter = ({ column }) => {
+  const { filterValue, setFilter } = column;
+
+  return (
+    <span>
+      <input
+        value={filterValue || ''}
+        onChange={(e) => setFilter(e.target.value)}
+      />
+    </span>
+  );
+};
+
 export default function PlayersTable({ players, teams, toggleMoreOpen }) {
   // The application should also accept filter options:
+
+  const defaultColumn = useMemo(
+    () => ({
+      // Let's set up our default Filter UI
+      Filter: <></>,
+    }),
+    []
+  );
 
   // Year
   // Team name
@@ -80,6 +101,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
       {
         Header: 'playerId',
         accessor: 'playerId',
+        Filter: ColumnFilter,
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
 
@@ -88,8 +110,8 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
       },
       {
         Header: 'yearId',
-        accessor: 'yearId',
-        Filter: ({ ColumnFilter }) => ColumnFilter,
+        accessor: 'yearID', // when filters will look for yearID to change.
+        Filter: ColumnFilter,
 
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
@@ -135,6 +157,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
       {
         Header: 'Team name(s)',
         accessor: 'teamName',
+        // Filter: ColumnFilter,
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
           // find the team of the player by teamId
@@ -176,6 +199,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
     prepareRow,
   } = useTable(
     {
+      defaultColumn,
       columns,
       data: players, // passing the players as data for the table
       initialState: { pageIndex: 0, pageSize: 20 },
@@ -205,9 +229,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
                       <Grid container direction="column">
                         <Grid item>{column.render('Header')}</Grid>
                         <Grid item>
-                          {/* {column.canFilter
-                                ? column.render('Filter')
-                                : null} */}
+                          {column.canFilter ? column.render('Filter') : null}
                         </Grid>
                       </Grid>
                     </TableCell>
