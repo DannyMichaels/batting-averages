@@ -8,15 +8,8 @@ export default function ShowMoreDialog({ open, onClose, playerData }) {
   return (
     playerData && (
       <Dialog open={open} onClose={onClose}>
-        <DialogTitle>
-          <Typography
-            style={{
-              fontSize: '1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-            }}>
-            More Info about {playerData.playerID}
-          </Typography>
+        <DialogTitle onClose={onClose}>
+          More Info about {playerData.playerID}
         </DialogTitle>
 
         <DialogContent

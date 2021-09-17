@@ -103,7 +103,9 @@ function App() {
       {
         Header: 'yearId',
         accessor: 'yearId',
-        Filter: () => {},
+        Filter: () => {
+          return <></>;
+        },
 
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
@@ -252,9 +254,9 @@ function App() {
                           {...column.getHeaderProps()}
                           className={classes.tableHeader}>
                           <Grid container direction="column" alignItems="left">
-                            <div>
-                              {column.canFilter && column.render('Filter')}
-                            </div>
+                            {/* <div>
+                              {column?.canFilter && column.render('Filter')}
+                            </div> */}
                           </Grid>
                         </TableCell>
                       );
