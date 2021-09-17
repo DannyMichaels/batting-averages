@@ -31,6 +31,24 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * @method calculateBA
+ * takes a player object, calculates Batting Average and returns the result.
+ * @param {Object} playerData  // the player containing the H and AB entries
+ * @returns {Number}
+ */
+const calculateBA = (playerData) => {
+  // Batting Average is calculated as: BA = H/AB (Hits / At Bats).
+  if (!playerData?.H || !playerData?.AB) return;
+
+  let hits = Number(playerData.H),
+    atBats = Number(playerData.AB);
+
+  let battingAverage = hits / atBats;
+
+  return battingAverage;
+};
+
 function App() {
   const [teams, setTeams] = useState([]); // use teams to get teamname
   const [players, setPlayers] = useState([]); // each individual players data, use teams to get the teamname
@@ -66,9 +84,10 @@ function App() {
       {
         Header: 'Batting Average',
         accessor: 'battingAverage',
-        Cell: (props) => {
-          console.log({ props });
-          return <span>battingAverage Cell</span>;
+        Cell: ({ cell }) => {
+          const playerData = cell.row.original;
+
+          return <span>{calculateBA(playerData)}</span>;
         },
       },
     ],
