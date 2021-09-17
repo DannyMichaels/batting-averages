@@ -27,7 +27,7 @@ import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 // utils
 import { makeStyles } from '@mui/styles';
 import ShowMoreDialog from './components/ShowMoreDialog';
-import { Hidden } from '@mui/material';
+import { Grid } from '@mui/material/Grid';
 
 const useStyles = makeStyles((theme) => ({
   tableRoot: {
@@ -103,6 +103,8 @@ function App() {
       {
         Header: 'yearId',
         accessor: 'yearId',
+        Filter: () => {},
+
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
           return <span>{playerData.yearID}</span>;
@@ -222,12 +224,13 @@ function App() {
           <TableContainer className={classes.tableContainer}>
             <Table stickyHeader className={classes.table} {...getTableProps()}>
               <TableHead>
+                {/* COLUMN HEADERS */}
                 {headerGroups.map((headerGroup) => (
-                  // table headers
                   <TableRow {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column) => {
+                    {headerGroup.headers.map((column, key) => {
                       return (
                         <TableCell
+                          key={key}
                           {...column.getHeaderProps()}
                           className={classes.tableHeader}>
                           {column.render('Header')}
@@ -238,24 +241,46 @@ function App() {
                 ))}
               </TableHead>
 
+              <TableHead>
+                {/* COLUMN FILTERS */}
+                {headerGroups.map((headerGroup) => (
+                  <TableRow {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column, idx) => {
+                      return (
+                        <TableCell
+                          key={idx}
+                          {...column.getHeaderProps()}
+                          className={classes.tableHeader}>
+                          <Grid container direction="column" alignItems="left">
+                            <div>
+                              {column.canFilter && column.render('Filter')}
+                            </div>
+                          </Grid>
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHead>
+
               <TableBody {...getTableBodyProps()}>
-                {rows.map((row, i) => {
+                {rows.map((row, idx) => {
                   prepareRow(row);
                   // table rows
                   return (
-                    <TableRow {...row.getRowProps()} hover key={i}>
-                      {row.cells.map((cell, i) => {
+                    <TableRow {...row.getRowProps()} hover key={idx}>
+                      {row.cells.map((cell, idx) => {
                         let playerData = row.original;
                         return (
                           // cell of row.
                           <Tooltip
                             title={`view more about ${playerData.playerID}`}
                             arrow
+                            key={idx}
                             placement="top">
                             <TableCell
                               style={{ cursor: 'pointer' }}
                               onClick={() => toggleMoreOpen(playerData)}
-                              key={i}
                               {...cell.getCellProps()}>
                               {cell.render('Cell')}
                             </TableCell>
