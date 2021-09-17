@@ -28,15 +28,15 @@ function App() {
   };
 
   useEffect(() => {
-    csv(TeamsCSV).then((data) => {
-      let dataWithoutColumns = data.slice(0, -1); // get rid of the columns object in the array.
-      setTeams(dataWithoutColumns);
-    });
+    const fetchCSVDataOnMount = async () => {
+      const teamsData = await csv(TeamsCSV);
+      setTeams(teamsData.slice(0, -1)); // get rid of the columns object in the array with slice.
 
-    csv(BattingCSV).then((data) => {
-      let dataWithoutColumns = data.slice(0, -1); // get rid of the columns object in the array.
-      setPlayers(dataWithoutColumns);
-    });
+      const playersData = await csv(BattingCSV);
+      setPlayers(playersData.slice(0, -1)); // get rid of the columns object in the array with slice
+    };
+
+    fetchCSVDataOnMount();
   }, []);
 
   return (
