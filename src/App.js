@@ -2,7 +2,12 @@ import { csv } from 'd3-fetch';
 import { useEffect, useState, useMemo } from 'react';
 import TeamsCSV from './Teams.csv';
 import BattingCSV from './Batting.csv';
-import { useTable, usePagination, useFilters } from 'react-table';
+import {
+  useTable,
+  usePagination,
+  useFilters,
+  useGlobalFilter,
+} from 'react-table';
 
 // components
 import Table from '@mui/material/Table';
@@ -69,6 +74,21 @@ const calculateBA = (playerData) => {
   return battingAverage;
 };
 
+// Define a default UI for filtering
+function ColumnFilter({ column: { filterValue, preFilteredRows, setFilter } }) {
+  const count = preFilteredRows.length;
+
+  return (
+    <input
+      value={filterValue || ''}
+      onChange={(e) => {
+        setFilter(e.target.value || undefined); // Set undefined to remove the filter entirely
+      }}
+      placeholder={`Search ${count} records...`}
+    />
+  );
+}
+
 function App() {
   const [teams, setTeams] = useState([]); // use teams to get teamname
   const [players, setPlayers] = useState([]); // each individual players data, use teams to get the teamname
@@ -103,9 +123,7 @@ function App() {
       {
         Header: 'yearId',
         accessor: 'yearId',
-        Filter: () => {
-          return <></>;
-        },
+        Filter: ({ ColumnFilter }) => ColumnFilter,
 
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
@@ -198,6 +216,7 @@ function App() {
     },
     useFilters,
 
+    useGlobalFilter,
     usePagination
   ); // react-table hooks
 
@@ -235,28 +254,13 @@ function App() {
                           key={key}
                           {...column.getHeaderProps()}
                           className={classes.tableHeader}>
-                          {column.render('Header')}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-              </TableHead>
-
-              <TableHead>
-                {/* COLUMN FILTERS */}
-                {headerGroups.map((headerGroup) => (
-                  <TableRow {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column, idx) => {
-                      return (
-                        <TableCell
-                          key={idx}
-                          {...column.getHeaderProps()}
-                          className={classes.tableHeader}>
-                          <Grid container direction="column" alignItems="left">
-                            {/* <div>
-                              {column?.canFilter && column.render('Filter')}
-                            </div> */}
+                          <Grid container direction="column">
+                            <Grid item>{column.render('Header')}</Grid>
+                            <Grid item>
+                              {/* {column.canFilter
+                                ? column.render('Filter')
+                                : null} */}
+                            </Grid>
                           </Grid>
                         </TableCell>
                       );
@@ -296,80 +300,84 @@ function App() {
             </Table>
           </TableContainer>
 
-          <TableFooter>
-            <TableRow>
-              {/* TABLE PAGINATION */}
+          <Table>
+            <TableFooter>
+              <TableRow>
+                {/* TABLE PAGINATION */}
 
-              {/* Material UI TablePagination component */}
-              <TablePagination
-                rowsPerPageOptions={[10, 20, 30, 40, 50]}
-                colSpan={0}
-                className={classes.pagination}
-                count={pageOptions.length}
-                rowsPerPage={pageSize}
-                onPageChange={gotoPage}
-                page={pageIndex}
-                classes={{ spacer: classes.paginationSpacer }}
-                onRowsPerPageChange={(e) => setPageSize(Number(e.target.value))}
-                ActionsComponent={(props) => {
-                  const { count, page, rowsPerPage, onPageChange } = props;
+                {/* Material UI TablePagination component */}
+                <TablePagination
+                  rowsPerPageOptions={[10, 20, 30, 40, 50]}
+                  colSpan={0}
+                  className={classes.pagination}
+                  count={pageOptions.length}
+                  rowsPerPage={pageSize}
+                  onPageChange={gotoPage}
+                  page={pageIndex}
+                  classes={{ spacer: classes.paginationSpacer }}
+                  onRowsPerPageChange={(e) =>
+                    setPageSize(Number(e.target.value))
+                  }
+                  ActionsComponent={(props) => {
+                    const { count, page, rowsPerPage, onPageChange } = props;
 
-                  const handleFirstPageButtonClick = () => {
-                    onPageChange(0);
-                  };
+                    const handleFirstPageButtonClick = () => {
+                      onPageChange(0);
+                    };
 
-                  const handleBackButtonClick = () => {
-                    if (!canPreviousPage) return;
+                    const handleBackButtonClick = () => {
+                      if (!canPreviousPage) return;
 
-                    const previousPage = page - 1;
-                    onPageChange(previousPage);
-                  };
+                      const previousPage = page - 1;
+                      onPageChange(previousPage);
+                    };
 
-                  const handleNextButtonClick = () => {
-                    if (!canNextPage) return;
+                    const handleNextButtonClick = () => {
+                      if (!canNextPage) return;
 
-                    const nextPage = page + 1;
-                    onPageChange(nextPage);
-                  };
+                      const nextPage = page + 1;
+                      onPageChange(nextPage);
+                    };
 
-                  const handleLastPageButtonClick = () => {
-                    onPageChange(
-                      Math.max(0, Math.ceil(count / rowsPerPage) - 1)
+                    const handleLastPageButtonClick = () => {
+                      onPageChange(
+                        Math.max(0, Math.ceil(count / rowsPerPage) - 1)
+                      );
+                    };
+
+                    return (
+                      <div id="ACTIONS" className={classes.paginationActions}>
+                        <IconButton
+                          onClick={handleFirstPageButtonClick}
+                          disabled={page === 0}
+                          aria-label="first page">
+                          <FirstPageIcon />
+                        </IconButton>
+                        <IconButton
+                          onClick={handleBackButtonClick}
+                          disabled={page === 0}
+                          aria-label="previous page">
+                          <KeyboardArrowLeft />
+                        </IconButton>
+                        <IconButton
+                          onClick={handleNextButtonClick}
+                          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+                          aria-label="next page">
+                          <KeyboardArrowRight />
+                        </IconButton>
+                        <IconButton
+                          onClick={handleLastPageButtonClick}
+                          disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+                          aria-label="last page">
+                          <LastPageIcon />
+                        </IconButton>
+                      </div>
                     );
-                  };
-
-                  return (
-                    <div id="ACTIONS" className={classes.paginationActions}>
-                      <IconButton
-                        onClick={handleFirstPageButtonClick}
-                        disabled={page === 0}
-                        aria-label="first page">
-                        <FirstPageIcon />
-                      </IconButton>
-                      <IconButton
-                        onClick={handleBackButtonClick}
-                        disabled={page === 0}
-                        aria-label="previous page">
-                        <KeyboardArrowLeft />
-                      </IconButton>
-                      <IconButton
-                        onClick={handleNextButtonClick}
-                        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-                        aria-label="next page">
-                        <KeyboardArrowRight />
-                      </IconButton>
-                      <IconButton
-                        onClick={handleLastPageButtonClick}
-                        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-                        aria-label="last page">
-                        <LastPageIcon />
-                      </IconButton>
-                    </div>
-                  );
-                }}
-              />
-            </TableRow>
-          </TableFooter>
+                  }}
+                />
+              </TableRow>
+            </TableFooter>
+          </Table>
         </Paper>
       </Box>
 
