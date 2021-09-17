@@ -16,6 +16,7 @@ import TablePagination from '@mui/material/TablePagination';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
 
 // icons
 import FirstPageIcon from '@mui/icons-material/FirstPage';
@@ -25,6 +26,7 @@ import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 
 // utils
 import { makeStyles } from '@mui/styles';
+import ShowMoreDialog from './components/ShowMoreDialog';
 
 const useStyles = makeStyles((theme) => ({
   tableRoot: {
@@ -69,6 +71,18 @@ const calculateBA = (playerData) => {
 function App() {
   const [teams, setTeams] = useState([]); // use teams to get teamname
   const [players, setPlayers] = useState([]); // each individual players data, use teams to get the teamname
+  const [showMore, setShowMore] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+
+  const toggleMoreOpen = (playerData) => {
+    setShowMore(playerData.playerID);
+    setSelectedPlayer(playerData);
+  };
+
+  const closeMoreOpen = () => {
+    setShowMore(false);
+    setSelectedPlayer(null);
+  };
 
   const columns = useMemo(
     () => [
@@ -114,8 +128,8 @@ function App() {
         },
       },
     ],
-    // check for these dependencies changing to trigger a variable change.
-    [players, teams]
+    // check for these dependencies changing to trigger a rerender change.
+    [teams]
   );
 
   const {
@@ -134,7 +148,7 @@ function App() {
   } = useTable(
     {
       columns,
-      data: players,
+      data: players, // passing the players as data for the table
       initialState: { pageIndex: 0, pageSize: 20 },
     },
     usePagination
@@ -155,126 +169,147 @@ function App() {
   }, []);
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh">
-      <Paper>
-        <TableContainer className={classes.tableContainer}>
-          <Table stickyHeader className={classes.table} {...getTableProps()}>
-            <TableHead>
-              {headerGroups.map((headerGroup) => (
-                // table headers
-                <TableRow {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => {
-                    return (
-                      <TableCell
-                        {...column.getHeaderProps()}
-                        className={classes.tableHeader}>
-                        {column.render('Header')}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHead>
-
-            <TableBody {...getTableBodyProps()}>
-              {rows.map((row, i) => {
-                prepareRow(row);
-                // table rows
-                return (
-                  <TableRow {...row.getRowProps()} hover key={i}>
-                    {row.cells.map((cell, i) => {
+    <>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh">
+        <Paper>
+          <TableContainer className={classes.tableContainer}>
+            <Table stickyHeader className={classes.table} {...getTableProps()}>
+              <TableHead>
+                {headerGroups.map((headerGroup) => (
+                  // table headers
+                  <TableRow {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => {
                       return (
-                        // cell of row.
-                        <TableCell key={i} {...cell.getCellProps()}>
-                          {cell.render('Cell')}
+                        <TableCell
+                          {...column.getHeaderProps()}
+                          className={classes.tableHeader}>
+                          {column.render('Header')}
                         </TableCell>
                       );
                     })}
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                ))}
+              </TableHead>
 
-        <TableFooter>
-          <TableRow>
-            {/* TABLE PAGINATION */}
+              <TableBody {...getTableBodyProps()}>
+                {rows.map((row, i) => {
+                  prepareRow(row);
+                  // table rows
+                  return (
+                    <TableRow {...row.getRowProps()} hover key={i}>
+                      {row.cells.map((cell, i) => {
+                        let playerData = row.original;
+                        return (
+                          // cell of row.
+                          <Tooltip
+                            title={`view more about ${playerData.playerID}`}
+                            arrow
+                            placement="top">
+                            <TableCell
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => toggleMoreOpen(playerData)}
+                              key={i}
+                              {...cell.getCellProps()}>
+                              {cell.render('Cell')}
+                            </TableCell>
+                          </Tooltip>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-            {/* Material UI TablePagination component */}
-            <TablePagination
-              rowsPerPageOptions={[10, 20, 30, 40, 50]}
-              colSpan={0}
-              className={classes.pagination}
-              count={pageOptions.length}
-              rowsPerPage={pageSize}
-              onPageChange={gotoPage}
-              page={pageIndex}
-              classes={{ spacer: classes.paginationSpacer }}
-              onRowsPerPageChange={(e) => setPageSize(Number(e.target.value))}
-              ActionsComponent={(props) => {
-                const { count, page, rowsPerPage, onPageChange } = props;
+          <TableFooter>
+            <TableRow>
+              {/* TABLE PAGINATION */}
 
-                const handleFirstPageButtonClick = () => {
-                  onPageChange(0);
-                };
+              {/* Material UI TablePagination component */}
+              <TablePagination
+                rowsPerPageOptions={[10, 20, 30, 40, 50]}
+                colSpan={0}
+                className={classes.pagination}
+                count={pageOptions.length}
+                rowsPerPage={pageSize}
+                onPageChange={gotoPage}
+                page={pageIndex}
+                classes={{ spacer: classes.paginationSpacer }}
+                onRowsPerPageChange={(e) => setPageSize(Number(e.target.value))}
+                ActionsComponent={(props) => {
+                  const { count, page, rowsPerPage, onPageChange } = props;
 
-                const handleBackButtonClick = () => {
-                  if (!canPreviousPage) return;
+                  const handleFirstPageButtonClick = () => {
+                    onPageChange(0);
+                  };
 
-                  const previousPage = page - 1;
-                  onPageChange(previousPage);
-                };
+                  const handleBackButtonClick = () => {
+                    if (!canPreviousPage) return;
 
-                const handleNextButtonClick = () => {
-                  if (!canNextPage) return;
+                    const previousPage = page - 1;
+                    onPageChange(previousPage);
+                  };
 
-                  const nextPage = page + 1;
-                  onPageChange(nextPage);
-                };
+                  const handleNextButtonClick = () => {
+                    if (!canNextPage) return;
 
-                const handleLastPageButtonClick = () => {
-                  onPageChange(Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-                };
+                    const nextPage = page + 1;
+                    onPageChange(nextPage);
+                  };
 
-                return (
-                  <div id="ACTIONS" className={classes.paginationActions}>
-                    <IconButton
-                      onClick={handleFirstPageButtonClick}
-                      disabled={page === 0}
-                      aria-label="first page">
-                      <FirstPageIcon />
-                    </IconButton>
-                    <IconButton
-                      onClick={handleBackButtonClick}
-                      disabled={page === 0}
-                      aria-label="previous page">
-                      <KeyboardArrowLeft />
-                    </IconButton>
-                    <IconButton
-                      onClick={handleNextButtonClick}
-                      disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-                      aria-label="next page">
-                      <KeyboardArrowRight />
-                    </IconButton>
-                    <IconButton
-                      onClick={handleLastPageButtonClick}
-                      disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-                      aria-label="last page">
-                      <LastPageIcon />
-                    </IconButton>
-                  </div>
-                );
-              }}
-            />
-          </TableRow>
-        </TableFooter>
-      </Paper>
-    </Box>
+                  const handleLastPageButtonClick = () => {
+                    onPageChange(
+                      Math.max(0, Math.ceil(count / rowsPerPage) - 1)
+                    );
+                  };
+
+                  return (
+                    <div id="ACTIONS" className={classes.paginationActions}>
+                      <IconButton
+                        onClick={handleFirstPageButtonClick}
+                        disabled={page === 0}
+                        aria-label="first page">
+                        <FirstPageIcon />
+                      </IconButton>
+                      <IconButton
+                        onClick={handleBackButtonClick}
+                        disabled={page === 0}
+                        aria-label="previous page">
+                        <KeyboardArrowLeft />
+                      </IconButton>
+                      <IconButton
+                        onClick={handleNextButtonClick}
+                        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+                        aria-label="next page">
+                        <KeyboardArrowRight />
+                      </IconButton>
+                      <IconButton
+                        onClick={handleLastPageButtonClick}
+                        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+                        aria-label="last page">
+                        <LastPageIcon />
+                      </IconButton>
+                    </div>
+                  );
+                }}
+              />
+            </TableRow>
+          </TableFooter>
+        </Paper>
+      </Box>
+
+      {/* show more dialog */}
+      <ShowMoreDialog
+        open={showMore === selectedPlayer?.playerID ?? false}
+        onClose={closeMoreOpen}
+        playerData={selectedPlayer}
+      />
+    </>
   );
 }
 

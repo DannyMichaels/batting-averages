@@ -5,6 +5,11 @@ Create an app that will ingest a raw CSV file with player statistics and
 presents simple UI for ranking and filtering players based on their batting
 performance.
 
+## running it on your machine
+
+- run the command `yarn` to install all dependencies.
+- run `yarn start` to start the app.
+
 ## Interface
 
 The application should take an input in form of a CSV file. The file will be
