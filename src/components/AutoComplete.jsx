@@ -98,8 +98,8 @@ export default function AutoComplete({
           placeholder={placeholder}
           endAdornment={
             <InputAdornment position="end">
-              <IconButton>
-                <CloseIcon fontSize="small" onClick={handleReset} />
+              <IconButton onClick={handleReset}>
+                <CloseIcon fontSize="small" />
               </IconButton>
             </InputAdornment>
           }
