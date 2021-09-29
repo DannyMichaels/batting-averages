@@ -5,7 +5,7 @@ import {
   useFilters,
   useGlobalFilter,
 } from 'react-table';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 // utils
 import { makeStyles } from '@mui/styles';
@@ -34,6 +34,7 @@ import LastPageIcon from '@mui/icons-material/LastPage';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import AutoComplete from './AutoComplete';
+import { debounce } from '../utils/debounce';
 const useStyles = makeStyles((theme) => ({
   tableRoot: {
     width: '100%',
@@ -84,11 +85,14 @@ const sortPlayers = (a, b) => {
 };
 
 const TeamsFilter = ({ column }) => {
-  const { filterValue, setFilter } = column;
+  // not using filterValue, using state here instead to optimize performance.
+  const { /*filterValue,*/ setFilter } = column;
+  const [inputValue, setInputValue] = useState('');
 
-  const handleChange = (event) => {
-    setFilter(event.target.value);
-  };
+  // optimize table rerender with debounce
+  const handleChangeFilterValue = debounce((e) => {
+    setFilter(e.target.value);
+  }, 250);
 
   return (
     <span>
@@ -96,8 +100,11 @@ const TeamsFilter = ({ column }) => {
         variant="outlined"
         style={{ color: '#000 !important' }}
         placeholder={`Filter by ${column.Header}`}
-        value={filterValue || ''}
-        onChange={handleChange}
+        value={inputValue || ''}
+        onChange={(e) => {
+          setInputValue(e.target.value); // user input to see on UI (can't take e.target from debounce)
+          handleChangeFilterValue(e); // debounced handlechange.
+        }}
       />
     </span>
   );
@@ -132,16 +139,28 @@ const YearFilter = ({ column, yearIds }) => {
   );
 };
 
-const PlayerFilter = ({ column, playerIds }) => {
-  const { filterValue, setFilter } = column;
+const PlayerFilter = ({ column }) => {
+  const { filterValue, setFilter, filteredRows } = column;
 
-  const handleChange = (value) => {
-    setFilter(value);
-  };
+  // new set for repeating player IDs...
+  const filteredOptions = useMemo(
+    () => [...new Set(filteredRows.map(({ original }) => original.playerID))],
+    [filteredRows]
+  );
+
+  // filters by column.accessor: playerID
+  const handleChange = useCallback(
+    (value) => {
+      setFilter(value);
+    },
+
+    // whenever setFilter changes this function will be recreated  amd put into the handleChange variable
+    [setFilter]
+  );
 
   return (
     <AutoComplete
-      options={playerIds}
+      filteredOptions={filteredOptions}
       valueProp={filterValue}
       setFilterValue={handleChange} // passing the handleChange as props.
       fullWidth
@@ -167,13 +186,6 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
         .sort(sortPlayers),
     // change this whenever players or teams change
     [players, teams]
-  );
-
-  // playerIds for auto complete.
-  // use set so values don't repeat.
-  const playerIds = useMemo(
-    () => [...new Set([...tablePlayersData].map(({ playerID }) => playerID))],
-    [tablePlayersData]
   );
 
   const yearIds = useMemo(
@@ -270,7 +282,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
                         <Grid item>{column.render('Header')}</Grid>
                         <Grid item>
                           {column.canFilter
-                            ? column.render('Filter', { playerIds, yearIds }) // pass props to column
+                            ? column.render('Filter', { yearIds }) // pass props to column
                             : null}
                         </Grid>
                       </Grid>

@@ -1,85 +1,64 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo, useRef } from 'react';
 import Input from '@mui/material/Input';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-
-// optimize input onChange event
-const debounce = (callback, wait, timeoutId = null) => {
-  const debounceFn = (...args) => {
-    window.clearTimeout(timeoutId);
-
-    timeoutId = setTimeout(() => {
-      callback.apply(null, args);
-    }, wait);
-  };
-
-  debounceFn.cancel = () => window.clearTimeout(timeoutId);
-
-  return debounceFn;
-};
+import { debounce } from '../utils/debounce';
 
 // css for this is in index.css
-export default function AutoComplete({
+function AutoComplete({
   fullWidth,
   setFilterValue,
-  options,
   valueProp,
   placeholder,
+  filteredOptions,
 }) {
   const [userInput, setUserInput] = useState('');
-  const [filteredOptions, setFilteredOptions] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
+
+  const rerenders = useRef(0);
+  console.log('rerenders:', rerenders.current++);
 
   // optimize to not lag with debounce
   const onChange = debounce((e) => {
     const userInput = e.target.value;
-
     setFilterValue(userInput); // using the setFilterValue from props, setting playerId  to e.target.value
-
-    const newFilteredOptions = options.filter((option) =>
-      option.toLowerCase().includes(userInput.toLowerCase())
-    );
-
-    setFilteredOptions(newFilteredOptions);
     setShowOptions(true);
   }, 300);
 
   const handleReset = () => {
     setFilterValue('');
-
-    setFilteredOptions([]);
     setShowOptions(false);
     setUserInput('');
   };
 
   const handleClickOption = (e) => {
     setFilterValue(e.target.innerText);
-    setFilteredOptions([]);
     setShowOptions(false);
     setUserInput(e.target.innerText);
   };
 
-  const queriedOptions = useMemo(
-    () =>
-      filteredOptions.map((option, key) => (
-        <li
-          key={key}
-          aria-label={option}
-          className="autocomplete option"
-          onClick={handleClickOption}>
-          {option}
-        </li>
-      )),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filteredOptions]
-  );
-
+  //  renders dropdown or no options text
   const autoCompleteJSX = useMemo(() => {
-    if (showOptions && userInput) {
-      if (queriedOptions.length) {
-        return <ul className="autocomplete options">{queriedOptions}</ul>;
+    // if the user typed
+    if (userInput && showOptions) {
+      // if the user typed and we have filtered options, that means we should show the options
+      if (filteredOptions.length) {
+        return (
+          <ul className="autocomplete options">
+            {filteredOptions.map((option, key) => (
+              <li
+                key={key}
+                aria-label={option}
+                className="autocomplete option"
+                onClick={handleClickOption}>
+                {option}
+              </li>
+            ))}
+          </ul>
+        );
       } else {
+        // else if the user typed and we have no options
         return (
           <div className="autocomplete no-options">
             <em>No Option!</em>
@@ -87,7 +66,8 @@ export default function AutoComplete({
         );
       }
     }
-  }, [queriedOptions, userInput, showOptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredOptions, userInput, showOptions]);
 
   return (
     <>
@@ -118,3 +98,5 @@ export default function AutoComplete({
     </>
   );
 }
+
+export default memo(AutoComplete); // optimize rerender when props change with memo
