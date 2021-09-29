@@ -34,6 +34,27 @@ import LastPageIcon from '@mui/icons-material/LastPage';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import AutoComplete from './AutoComplete';
+const useStyles = makeStyles((theme) => ({
+  tableRoot: {
+    width: '100%',
+  },
+  tableContainer: {
+    maxHeight: 500,
+  },
+  paginationSpacer: {
+    flex: '1 1 100%',
+    [theme.breakpoints.down('md')]: {
+      flex: '0 0',
+    },
+  },
+  paginationActions: {
+    flexShrink: 0,
+    marginLeft: theme.spacing(2.5),
+    [theme.breakpoints.down('sm')]: {
+      flexShrink: 1, // direction buttons in a column in small screen
+    },
+  },
+}));
 
 /**
  * @method calculateBA
@@ -61,28 +82,6 @@ const sortPlayers = (a, b) => {
   // desc, highest avg showing at top.
   return playerTwoBA - playerOneBA;
 };
-
-const useStyles = makeStyles((theme) => ({
-  tableRoot: {
-    width: '100%',
-  },
-  tableContainer: {
-    maxHeight: 500,
-  },
-  paginationSpacer: {
-    flex: '1 1 100%',
-    [theme.breakpoints.down('md')]: {
-      flex: '0 0',
-    },
-  },
-  paginationActions: {
-    flexShrink: 0,
-    marginLeft: theme.spacing(2.5),
-    [theme.breakpoints.down('sm')]: {
-      flexShrink: 1, // direction buttons in a column in small screen
-    },
-  },
-}));
 
 const TeamsFilter = ({ column }) => {
   const { filterValue, setFilter } = column;
@@ -119,6 +118,7 @@ const YearFilter = ({ column, yearIds }) => {
         value={filterValue || ''}
         label="Filter by yearId"
         onChange={handleChange}>
+        <MenuItem value={''}>All</MenuItem>
         {[...yearIds]
           // latest year at top
           .sort((a, b) => b - a)
@@ -143,9 +143,7 @@ const PlayerFilter = ({ column, playerIds }) => {
     <AutoComplete
       options={playerIds}
       valueProp={filterValue}
-      displayKey={'playerId'}
-      valueKey={'playerId'}
-      handleChange={handleChange} // passing the handleChange as props.
+      setFilterValue={handleChange} // passing the handleChange as props.
       fullWidth
       placeholder={'Filter by playerId'}
     />
@@ -201,32 +199,16 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
         Header: 'playerId',
         accessor: 'playerID',
         Filter: PlayerFilter,
-        Cell: ({ cell }) => {
-          const playerData = cell.row.original;
-
-          return <span>{playerData.playerID}</span>;
-        },
       },
       {
         Header: 'yearId',
         accessor: 'yearID', // when filters will look for yearID to change.
         Filter: YearFilter,
-
-        Cell: ({ cell }) => {
-          const playerData = cell.row.original;
-          return <span>{playerData.yearID}</span>;
-        },
       },
       {
         Header: 'Team name(s)',
         accessor: 'teamName',
         Filter: TeamsFilter,
-
-        Cell: ({ cell }) => {
-          const playerData = cell.row.original;
-
-          return <span>{playerData.teamName}</span>;
-        },
       },
       {
         Header: 'Batting Average',
@@ -234,7 +216,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
         Cell: ({ cell }) => {
           const playerData = cell.row.original;
 
-          return <span>{calculateBA(playerData).toString()}</span>;
+          return calculateBA(playerData).toString();
         },
       },
     ],

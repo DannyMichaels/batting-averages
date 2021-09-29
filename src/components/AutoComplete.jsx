@@ -1,91 +1,94 @@
-import { useState, Children } from 'react';
+import { useState, useMemo } from 'react';
 import Input from '@mui/material/Input';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
-// css for this is in index.css
+// optimize input onChange event
+const debounce = (callback, wait, timeoutId = null) => {
+  const debounceFn = (...args) => {
+    window.clearTimeout(timeoutId);
 
+    timeoutId = setTimeout(() => {
+      callback.apply(null, args);
+    }, wait);
+  };
+
+  debounceFn.cancel = () => window.clearTimeout(timeoutId);
+
+  return debounceFn;
+};
+
+// css for this is in index.css
 export default function AutoComplete({
   fullWidth,
-  handleChange,
+  setFilterValue,
   options,
   valueProp,
-  displayKey,
   placeholder,
 }) {
-  const [state, setState] = useState({
-    activeOption: 0,
-    filteredOptions: [],
-    showOptions: false,
-    userInput: '',
-  });
+  const [userInput, setUserInput] = useState('');
+  const [filteredOptions, setFilteredOptions] = useState([]);
+  const [showOptions, setShowOptions] = useState(false);
 
-  const onChange = (e) => {
-    const userInput = e.currentTarget.value;
-    handleChange(userInput); // using the handleChange from props, setting name to e.target.value
+  // optimize to not lag with debounce
+  const onChange = debounce((e) => {
+    const userInput = e.target.value;
 
-    const filteredOptions = options.filter((option) =>
+    setFilterValue(userInput); // using the setFilterValue from props, setting playerId  to e.target.value
+
+    const newFilteredOptions = options.filter((option) =>
       option.toLowerCase().includes(userInput.toLowerCase())
     );
 
-    setState({
-      activeOption: 0,
-      filteredOptions,
-      showOptions: true,
-      userInput: e.currentTarget.value,
-    });
-  };
+    setFilteredOptions(newFilteredOptions);
+    setShowOptions(true);
+  }, 300);
 
   const handleReset = () => {
-    handleChange('');
+    setFilterValue('');
 
-    setState({
-      activeOption: 0,
-      filteredOptions: [],
-      showOptions: false,
-      userInput: '',
-    });
+    setFilteredOptions([]);
+    setShowOptions(false);
+    setUserInput('');
   };
 
   const handleClickOption = (e) => {
-    handleChange(e.currentTarget.innerText);
-
-    setState({
-      activeOption: 0,
-      filteredOptions: [],
-      showOptions: false,
-      userInput: e.currentTarget.innerText,
-    });
+    setFilterValue(e.target.innerText);
+    setFilteredOptions([]);
+    setShowOptions(false);
+    setUserInput(e.target.innerText);
   };
 
-  const { filteredOptions, showOptions, userInput } = state;
-
-  const queriedOptions = Children.toArray(
-    filteredOptions.map((option) => (
-      <li
-        aria-label={option[displayKey]}
-        className="autocomplete option"
-        onClick={handleClickOption}>
-        {typeof option === 'string' ? option : option[displayKey]}
-      </li>
-    ))
+  const queriedOptions = useMemo(
+    () =>
+      filteredOptions.map((option, key) => (
+        <li
+          key={key}
+          aria-label={option}
+          className="autocomplete option"
+          onClick={handleClickOption}>
+          {option}
+        </li>
+      )),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filteredOptions]
   );
 
-  let autoCompleteJSX;
-  if (showOptions && userInput) {
-    if (filteredOptions.length) {
-      autoCompleteJSX = (
-        <ul className="autocomplete options">{queriedOptions}</ul>
-      );
-    } else {
-      autoCompleteJSX = (
-        <div className="autocomplete no-options">
-          <em>No Option!</em>
-        </div>
-      );
+  const autoCompleteJSX = useMemo(() => {
+    if (showOptions && userInput) {
+      if (queriedOptions.length) {
+        return <ul className="autocomplete options">{queriedOptions}</ul>;
+      } else {
+        return (
+          <div className="autocomplete no-options">
+            <em>No Option!</em>
+          </div>
+        );
+      }
     }
-  }
+  }, [queriedOptions, userInput, showOptions]);
+
   return (
     <>
       <div className="autocomplete search">
@@ -93,8 +96,12 @@ export default function AutoComplete({
           fullWidth={fullWidth ? true : false}
           type="text"
           className="autocomplete search-box"
-          onChange={onChange}
-          value={valueProp || ''}
+          onChange={(e) => {
+            // set user input before onChange because onchange uses debounce and debounce can't access e.target
+            setUserInput(e.currentTarget.value);
+            onChange(e);
+          }}
+          value={userInput || ''}
           placeholder={placeholder}
           endAdornment={
             valueProp ? (
