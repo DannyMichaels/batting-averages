@@ -16,8 +16,8 @@ function AutoComplete({
   const [userInput, setUserInput] = useState('');
   const [showOptions, setShowOptions] = useState(false);
 
-  const rerenders = useRef(0);
-  console.log('rerenders:', rerenders.current++);
+  // const rerenders = useRef(0);
+  // console.log('rerenders:', rerenders.current++);
 
   // optimize to not lag with debounce
   const onChange = debounce((e) => {
