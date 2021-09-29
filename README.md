@@ -1,3 +1,9 @@
+
+
+# live deploy: 
+https://nervous-neumann-10456d.netlify.app/
+
+
 # Batting Average App
 
 Batting average is simple and a common way to measure batter’s performance.
