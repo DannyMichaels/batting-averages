@@ -365,7 +365,7 @@ export default function PlayersTable({ players, teams, toggleMoreOpen }) {
                 };
 
                 return (
-                  <div id="ACTIONS" className={classes.paginationActions}>
+                  <div className={classes.paginationActions}>
                     <IconButton
                       onClick={handleFirstPageButtonClick}
                       disabled={page === 0}
